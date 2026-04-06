@@ -1,10 +1,10 @@
 {
   "started_at": "2026-04-06T11:46:33",
-  "total_checks": 59,
-  "successful_checks": 59,
+  "total_checks": 60,
+  "successful_checks": 60,
   "failed_checks": 0,
   "last_result": {
-    "checked_at": "2026-04-06T14:21:43-04:00",
+    "checked_at": "2026-04-06T14:24:46-04:00",
     "success": true,
     "error": null,
     "tickets_found": false,
@@ -45,7 +45,7 @@
       "daily_status_sent": false,
       "duplicate_suppressed": false
     },
-    "duration_seconds": 9.3
+    "duration_seconds": 8.31
   },
   "history": [
     {
@@ -519,6 +519,14 @@
       "tickets_found": false,
       "available_count": 0,
       "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:24:46-04:00",
+      "success": true,
+      "duration_seconds": 8.31,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
     }
   ],
   "last_inventory": [
@@ -547,18 +555,18 @@
       0
     ]
   ],
-  "last_inventory_change_at": "2026-04-06T11:52:19-04:00",
+  "last_inventory_change_at": "2026-04-06T14:24:46-04:00",
   "last_available_change_at": null,
   "last_ticket_seen_at": null,
   "watchdog": {
-    "schedule_alert_open": false,
+    "schedule_alert_open": true,
     "last_schedule_run_at": "2026-04-06T18:12:16+00:00",
-    "last_schedule_age_minutes": 9,
+    "last_schedule_age_minutes": 12,
     "last_schedule_error": null
   },
   "git_sync": {
     "last_start_pull": null,
-    "last_finish_push": "2026-04-06T11:46:45",
+    "last_finish_push": "2026-04-06T14:24:26",
     "last_error": null
   }
 }
