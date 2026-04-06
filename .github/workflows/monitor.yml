@@ -30,4 +30,7 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DAILY_STATUS_ENABLED: "1"
+          DAILY_STATUS_HOUR: "20"
+          DAILY_STATUS_TZ: "America/New_York"
         run: python monitor.py
