@@ -10,4 +10,7 @@ if [[ -z "${TELEGRAM_TOKEN:-}" || -z "${TELEGRAM_CHAT_ID:-}" ]]; then
   exit 1
 fi
 
-python3 local_runner.py --interval-seconds 60
+INTERVAL_SECONDS="${INTERVAL_SECONDS:-150}"
+JITTER_SECONDS="${JITTER_SECONDS:-30}"
+
+python3 local_runner.py --interval-seconds "$INTERVAL_SECONDS" --jitter-seconds "$JITTER_SECONDS"
