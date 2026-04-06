@@ -39,7 +39,9 @@ def parse_ticket_inventory_from_text(page_text):
         # Format 1: "Regular Entrance Ticket 2"
         inline_match = INVENTORY_LINE_PATTERN.match(line)
         if inline_match:
-            add_detail(inline_match.group("name").strip(" -"), int(inline_match.group("count")))
+            add_detail(
+                inline_match.group("name").strip(" -"), int(inline_match.group("count"))
+            )
             continue
 
         # Format 2: name on one line, count on the next line.
@@ -91,7 +93,9 @@ def extract_available_ticket_details(buttons):
 
 def build_ticket_detail_message(ticket_details):
     if ticket_details:
-        detail_lines = [f"- {name}: {count} available" for name, count in ticket_details]
+        detail_lines = [
+            f"- {name}: {count} available" for name, count in ticket_details
+        ]
         return "<b>Ticket details:</b>\n" + "\n".join(detail_lines)
     return "<b>Ticket details:</b>\nCould not parse ticket names/counts from the page, but at least one ticket action is available."
 
@@ -138,7 +142,9 @@ def check_tickets():
             page.wait_for_timeout(5000)
 
             inventory = extract_ticket_inventory(page)
-            inventory_available = [(name, count) for name, count in inventory if count > 0]
+            inventory_available = [
+                (name, count) for name, count in inventory if count > 0
+            ]
 
             # Paylogic usually shows a "Select" button or a quantity dropdown when available
             # We check for any button that isn't disabled and isn't a 'Sold Out' label
@@ -158,7 +164,10 @@ def check_tickets():
 
             if tickets_found:
                 msg = f"<b>🚨 TICKET REVEALED!</b>\n\nNew tickets appear to be available at the link below:\n<a href='{URL}'>Click here to buy!</a>"
-                ticket_details = inventory_available or extract_available_ticket_details(available_buttons)
+                ticket_details = (
+                    inventory_available
+                    or extract_available_ticket_details(available_buttons)
+                )
                 detail_msg = build_ticket_detail_message(ticket_details)
 
                 print("Success: Tickets found!")

@@ -104,7 +104,9 @@ class TestMonitor(unittest.TestCase):
         context.new_page.return_value = page
 
         page.query_selector_all.return_value = []
-        page.inner_text.return_value = "Regular Entrance Ticket\n0\nVIP Entrance Ticket\n0"
+        page.inner_text.return_value = (
+            "Regular Entrance Ticket\n0\nVIP Entrance Ticket\n0"
+        )
 
         mock_send_telegram.return_value = True
 
@@ -148,14 +150,18 @@ class TestMonitor(unittest.TestCase):
         with patch.object(monitor, "DAILY_STATUS_ENABLED", "1"), patch.object(
             monitor, "DAILY_STATUS_HOUR", 20
         ), patch.object(monitor, "DAILY_STATUS_TZ", "America/New_York"):
-            target_time = datetime(2026, 4, 6, 20, 0, tzinfo=ZoneInfo("America/New_York"))
+            target_time = datetime(
+                2026, 4, 6, 20, 0, tzinfo=ZoneInfo("America/New_York")
+            )
             self.assertTrue(monitor.should_send_daily_status(now=target_time))
 
     def test_should_send_daily_status_false_outside_target_time(self):
         with patch.object(monitor, "DAILY_STATUS_ENABLED", "1"), patch.object(
             monitor, "DAILY_STATUS_HOUR", 20
         ), patch.object(monitor, "DAILY_STATUS_TZ", "America/New_York"):
-            non_target_time = datetime(2026, 4, 6, 19, 55, tzinfo=ZoneInfo("America/New_York"))
+            non_target_time = datetime(
+                2026, 4, 6, 19, 55, tzinfo=ZoneInfo("America/New_York")
+            )
             self.assertFalse(monitor.should_send_daily_status(now=non_target_time))
 
     @unittest.skipUnless(
@@ -182,7 +188,9 @@ class TestMonitor(unittest.TestCase):
             inventory = monitor.extract_ticket_inventory(page)
             browser.close()
 
-        self.assertGreater(len(inventory), 0, "No ticket inventory parsed from live page")
+        self.assertGreater(
+            len(inventory), 0, "No ticket inventory parsed from live page"
+        )
         available = [(name, count) for name, count in inventory if count > 0]
 
         if available:
@@ -198,8 +206,12 @@ class TestMonitor(unittest.TestCase):
             )
             details_for_message = inventory
 
-        detail_lines = [f"- {name}: {count}" for name, count in details_for_message[:10]]
-        second_message = "<b>[integration] Live ticket snapshot:</b>\n" + "\n".join(detail_lines)
+        detail_lines = [
+            f"- {name}: {count}" for name, count in details_for_message[:10]
+        ]
+        second_message = "<b>[integration] Live ticket snapshot:</b>\n" + "\n".join(
+            detail_lines
+        )
 
         with patch.object(monitor, "TELEGRAM_TOKEN", token), patch.object(
             monitor, "TELEGRAM_CHAT_ID", chat_id
@@ -248,9 +260,13 @@ class TestMonitor(unittest.TestCase):
                 "<b>[integration] No tickets currently available</b>\n"
                 "Live website parsing ran successfully."
             )
-            details_for_message = inventory[:10] if inventory else [("No inventory rows parsed", 0)]
+            details_for_message = (
+                inventory[:10] if inventory else [("No inventory rows parsed", 0)]
+            )
             detail_lines = [f"- {name}: {count}" for name, count in details_for_message]
-            detail_message = "<b>[integration] Live ticket snapshot:</b>\n" + "\n".join(detail_lines)
+            detail_message = "<b>[integration] Live ticket snapshot:</b>\n" + "\n".join(
+                detail_lines
+            )
             daily_message = "<b>[integration] Daily check:</b> No tickets found today. Monitoring is running."
 
         with patch.object(monitor, "TELEGRAM_TOKEN", token), patch.object(
