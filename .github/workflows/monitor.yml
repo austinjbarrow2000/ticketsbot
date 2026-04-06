@@ -7,24 +7,19 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    env:
-      # This silences the deprecation warning you saw
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          playwright install chromium
-          # THIS IS THE FIX: Installs system libraries for the browser
-          sudo playwright install-deps
+          python -m playwright install --with-deps chromium
 
       - name: Run Script
         env:

@@ -121,14 +121,16 @@ def send_telegram(message):
 
 def check_tickets():
     with sync_playwright() as p:
-        # Launching browser
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-        )
-        page = context.new_page()
+        browser = None
 
         try:
+            # Launching browser
+            browser = p.chromium.launch(headless=True)
+            context = browser.new_context(
+                user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+            )
+            page = context.new_page()
+
             print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] Checking Paylogic...")
             page.goto(URL, wait_until="networkidle", timeout=60000)
 
@@ -188,7 +190,8 @@ def check_tickets():
         except Exception as e:
             print(f"Error during execution: {e}")
         finally:
-            browser.close()
+            if browser is not None:
+                browser.close()
 
 
 if __name__ == "__main__":
