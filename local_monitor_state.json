@@ -1,16 +1,16 @@
 {
   "started_at": "2026-04-06T11:46:33",
-  "total_checks": 62,
-  "successful_checks": 62,
+  "total_checks": 80,
+  "successful_checks": 80,
   "failed_checks": 0,
   "last_result": {
-    "checked_at": "2026-04-06T14:30:01-04:00",
+    "checked_at": "2026-04-06T15:21:10-04:00",
     "success": true,
     "error": null,
     "tickets_found": false,
     "summary": {
       "available": 0,
-      "sold": 21
+      "sold": 23
     },
     "inventory": [
       [
@@ -45,7 +45,7 @@
       "daily_status_sent": false,
       "duplicate_suppressed": false
     },
-    "duration_seconds": 11.21
+    "duration_seconds": 8.58
   },
   "history": [
     {
@@ -543,6 +543,150 @@
       "tickets_found": false,
       "available_count": 0,
       "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:34:45-04:00",
+      "success": true,
+      "duration_seconds": 8.77,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:37:12-04:00",
+      "success": true,
+      "duration_seconds": 8.59,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:39:24-04:00",
+      "success": true,
+      "duration_seconds": 8.69,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:41:53-04:00",
+      "success": true,
+      "duration_seconds": 8.82,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:44:22-04:00",
+      "success": true,
+      "duration_seconds": 8.9,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:47:22-04:00",
+      "success": true,
+      "duration_seconds": 9.45,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:50:17-04:00",
+      "success": true,
+      "duration_seconds": 9.03,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:53:27-04:00",
+      "success": true,
+      "duration_seconds": 8.95,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:56:33-04:00",
+      "success": true,
+      "duration_seconds": 8.97,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T14:59:10-04:00",
+      "success": true,
+      "duration_seconds": 8.53,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:01:24-04:00",
+      "success": true,
+      "duration_seconds": 8.71,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:04:10-04:00",
+      "success": true,
+      "duration_seconds": 9.57,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:06:58-04:00",
+      "success": true,
+      "duration_seconds": 9.11,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:10:08-04:00",
+      "success": true,
+      "duration_seconds": 8.78,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:13:15-04:00",
+      "success": true,
+      "duration_seconds": 8.6,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:15:39-04:00",
+      "success": true,
+      "duration_seconds": 9.48,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:18:34-04:00",
+      "success": true,
+      "duration_seconds": 8.76,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
+    },
+    {
+      "checked_at": "2026-04-06T15:21:10-04:00",
+      "success": true,
+      "duration_seconds": 8.58,
+      "tickets_found": false,
+      "available_count": 0,
+      "error": null
     }
   ],
   "last_inventory": [
@@ -571,12 +715,12 @@
       0
     ]
   ],
-  "last_inventory_change_at": "2026-04-06T14:26:59-04:00",
+  "last_inventory_change_at": "2026-04-06T14:34:45-04:00",
   "last_available_change_at": null,
   "last_ticket_seen_at": null,
   "watchdog": {
     "schedule_alert_open": true,
-    "last_schedule_run_at": "2026-04-06T18:12:16+00:00",
+    "last_schedule_run_at": "2026-04-06T19:04:00+00:00",
     "last_schedule_age_minutes": 17,
     "last_schedule_error": null
   },
