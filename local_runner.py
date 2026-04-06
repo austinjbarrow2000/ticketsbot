@@ -281,7 +281,10 @@ def _parse_iso(value):
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value)
+        parsed = datetime.fromisoformat(value)
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
     except Exception:
         return None
 
@@ -298,7 +301,7 @@ def _avg_duration(state):
 
 
 def render_dashboard(state, interval_seconds, jitter_seconds):
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
     last = state.get("last_result") or {}
     summary = last.get("summary", {})
     inventory = last.get("inventory", [])
