@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from monitor import check_tickets, send_telegram
 
@@ -19,8 +20,33 @@ WATCH_GITHUB_MAX_DELAY_MINUTES = int(os.getenv("WATCH_GITHUB_MAX_DELAY_MINUTES",
 STATE_FILE = os.getenv("LOCAL_MONITOR_STATE_FILE", "local_monitor_state.json")
 MAX_HISTORY = int(os.getenv("LOCAL_MONITOR_MAX_HISTORY", "500"))
 GIT_STATE_SYNC_ENABLED = os.getenv("GIT_STATE_SYNC_ENABLED", "1") == "1"
+LOCAL_DISPLAY_TZ = os.getenv("LOCAL_DISPLAY_TZ")
+FORCE_COLOR = os.getenv("FORCE_COLOR", "0") == "1"
+NO_COLOR = os.getenv("NO_COLOR") is not None
+
+USE_COLOR = (sys.stdout.isatty() and not NO_COLOR) or FORCE_COLOR
+
+ANSI_RESET = "\033[0m"
+ANSI_BOLD = "\033[1m"
+ANSI_DIM = "\033[2m"
+ANSI_RED = "\033[31m"
+ANSI_GREEN = "\033[32m"
+ANSI_YELLOW = "\033[33m"
+ANSI_CYAN = "\033[36m"
 
 _runtime = {"state": None, "finalized": False}
+
+
+def _get_display_timezone():
+    if LOCAL_DISPLAY_TZ:
+        try:
+            return ZoneInfo(LOCAL_DISPLAY_TZ)
+        except Exception:
+            pass
+    return datetime.now().astimezone().tzinfo or timezone.utc
+
+
+DISPLAY_TZ = _get_display_timezone()
 
 
 def sleep_with_jitter(interval_seconds, jitter_seconds):
@@ -300,12 +326,59 @@ def _avg_duration(state):
     return sum(durations) / len(durations)
 
 
+def format_display_timestamp(value):
+    if not value:
+        return "n/a"
+
+    parsed = _parse_iso(value)
+    if parsed is None:
+        return str(value)
+
+    return parsed.astimezone(DISPLAY_TZ).isoformat(timespec="seconds")
+
+
+def bool_text(value):
+    return "yes" if value else "no"
+
+
+def colorize(text, color):
+    if not USE_COLOR:
+        return text
+    return f"{color}{text}{ANSI_RESET}"
+
+
+def style_header(text):
+    return colorize(text, ANSI_BOLD + ANSI_CYAN)
+
+
+def status_badge(ok):
+    if ok:
+        return colorize("OK", ANSI_BOLD + ANSI_GREEN)
+    return colorize("ERROR", ANSI_BOLD + ANSI_RED)
+
+
+def availability_badge(count):
+    if count > 0:
+        return colorize(str(count), ANSI_BOLD + ANSI_GREEN)
+    return colorize(str(count), ANSI_DIM)
+
+
 def render_dashboard(state, interval_seconds, jitter_seconds):
     now = datetime.now(timezone.utc)
+    now_local = now.astimezone(DISPLAY_TZ)
     last = state.get("last_result") or {}
     summary = last.get("summary", {})
     inventory = last.get("inventory", [])
     alerts = last.get("alerts", {})
+    sorted_inventory = sorted(
+        inventory, key=lambda item: (item[1] <= 0, item[0].lower())
+    )
+    available_total = (
+        int(sum(count for _, count in inventory if int(count) > 0)) if inventory else 0
+    )
+    active_ticket_types = (
+        int(sum(1 for _, count in inventory if int(count) > 0)) if inventory else 0
+    )
 
     success_count = state.get("successful_checks", 0)
     total_count = state.get("total_checks", 0)
@@ -331,54 +404,52 @@ def render_dashboard(state, interval_seconds, jitter_seconds):
 
     lines = []
     lines.append("\033[2J\033[H")
-    lines.append("Ticket Monitor Dashboard")
+    lines.append(style_header("Ticket Monitor Dashboard (Live)"))
     lines.append("=" * 80)
-    lines.append(f"Now: {now.isoformat(timespec='seconds')}")
     lines.append(
-        f"Cadence: every {interval_seconds}s with +/- {jitter_seconds}s jitter | State file: {STATE_FILE}"
+        f"Now: {now_local.isoformat(timespec='seconds')} ({DISPLAY_TZ}) | Cadence: {interval_seconds}s +/- {jitter_seconds}s"
     )
-    lines.append("")
-
-    lines.append("State Sync")
-    lines.append("-" * 80)
-    lines.append(f"Git sync enabled: {GIT_STATE_SYNC_ENABLED}")
-    lines.append(f"Last startup pull: {git_sync.get('last_start_pull')}")
-    lines.append(f"Last finish push: {git_sync.get('last_finish_push')}")
-    if git_sync.get("last_error"):
-        lines.append(f"Last sync error: {git_sync.get('last_error')}")
+    lines.append(f"State file: {STATE_FILE}")
     lines.append("")
 
     status = "OK" if last.get("success") else "ERROR"
-    lines.append("Latest Check")
+    lines.append(style_header("Monitor Status"))
     lines.append("-" * 80)
     lines.append(
-        f"Status: {status} | Checked at: {last.get('checked_at', 'n/a')} | Duration: {last.get('duration_seconds', 'n/a')}s"
+        f"Health={status} | Last check={format_display_timestamp(last.get('checked_at'))} | Duration={last.get('duration_seconds', 'n/a')}s"
     )
     lines.append(
-        f"Tickets found: {last.get('tickets_found', False)} | Event available: {summary.get('available')} | Event sold: {summary.get('sold')}"
+        f"Tickets found={bool_text(last.get('tickets_found', False))} | Available now={available_total} | Active ticket types={active_ticket_types}"
+    )
+    lines.append(
+        f"Event counters: available={summary.get('available')} sold={summary.get('sold')}"
     )
     if last.get("error"):
-        lines.append(f"Error: {last.get('error')}")
+        lines.append(f"Last error: {last.get('error')}")
     lines.append(
-        "Alerts: "
-        f"ticket={alerts.get('ticket_alert_sent', False)} "
-        f"detail={alerts.get('detail_alert_sent', False)} "
-        f"daily={alerts.get('daily_status_sent', False)} "
-        f"suppressed={alerts.get('duplicate_suppressed', False)}"
+        "Alerts sent: "
+        f"ticket={bool_text(alerts.get('ticket_alert_sent', False))} "
+        f"details={bool_text(alerts.get('detail_alert_sent', False))} "
+        f"daily={bool_text(alerts.get('daily_status_sent', False))} "
+        f"dedupe_suppressed={bool_text(alerts.get('duplicate_suppressed', False))}"
+    )
+    lines.append(
+        f"Change timers: inventory={format_timedelta(inventory_change_age)} | availability={format_timedelta(available_change_age)} | since any availability={format_timedelta(last_ticket_seen_age)}"
     )
     lines.append("")
 
-    lines.append("Ticket Inventory")
+    lines.append(style_header("Ticket Table"))
     lines.append("-" * 80)
-    if inventory:
-        for name, count in inventory:
+    lines.append("Qty | Status    | Ticket")
+    if sorted_inventory:
+        for name, count in sorted_inventory:
             status_text = "AVAILABLE" if int(count) > 0 else "SOLD OUT"
             lines.append(f"{count:>4} | {status_text:<9} | {name}")
     else:
         lines.append("No inventory captured yet.")
     lines.append("")
 
-    lines.append("Realtime Stats")
+    lines.append(style_header("Realtime Stats"))
     lines.append("-" * 80)
     lines.append(
         f"Checks: total={total_count} success={success_count} failed={state.get('failed_checks', 0)} success_rate={success_rate:.1f}%"
@@ -388,36 +459,33 @@ def render_dashboard(state, interval_seconds, jitter_seconds):
         if avg_duration is not None
         else "Average check duration: n/a"
     )
-    lines.append(
-        f"Time since any inventory change: {format_timedelta(inventory_change_age)}"
-    )
-    lines.append(
-        f"Time since available-count change: {format_timedelta(available_change_age)}"
-    )
-    lines.append(
-        f"Time since any ticket was available: {format_timedelta(last_ticket_seen_age)}"
-    )
+    lines.append(f"History rows stored: {len(state.get('history', []))}")
     lines.append("")
 
-    lines.append("GitHub Schedule Watchdog")
+    lines.append(style_header("System"))
     lines.append("-" * 80)
     lines.append(
-        f"Enabled: {WATCH_GITHUB_SCHEDULE} | Alert open: {watchdog.get('schedule_alert_open', False)}"
+        f"Git sync: enabled={GIT_STATE_SYNC_ENABLED} last_pull={format_display_timestamp(git_sync.get('last_start_pull'))} last_push={format_display_timestamp(git_sync.get('last_finish_push'))}"
+    )
+    if git_sync.get("last_error"):
+        lines.append(f"Git sync error: {git_sync.get('last_error')}")
+    lines.append(
+        f"GH watchdog: enabled={WATCH_GITHUB_SCHEDULE} alert_open={bool_text(watchdog.get('schedule_alert_open', False))} age={watchdog.get('last_schedule_age_minutes')}m"
     )
     lines.append(
-        f"Last scheduled run: {watchdog.get('last_schedule_run_at')} | Age: {watchdog.get('last_schedule_age_minutes')} minutes"
+        f"Last scheduled run: {format_display_timestamp(watchdog.get('last_schedule_run_at'))}"
     )
     if watchdog.get("last_schedule_error"):
-        lines.append(f"Last watchdog error: {watchdog.get('last_schedule_error')}")
+        lines.append(f"Watchdog error: {watchdog.get('last_schedule_error')}")
     lines.append("")
 
-    lines.append("Recent Checks")
+    lines.append(style_header("Recent Checks (latest 8)"))
     lines.append("-" * 80)
     for item in state.get("history", [])[-8:]:
         marker = "OK" if item.get("success") else "ERR"
         lines.append(
-            f"{item.get('checked_at')} | {marker:<3} | {item.get('duration_seconds', 0):>5}s | "
-            f"tickets_found={item.get('tickets_found')} | available_total={item.get('available_count')}"
+            f"{format_display_timestamp(item.get('checked_at'))} | {marker:<3} | {item.get('duration_seconds', 0):>5}s | "
+            f"found={bool_text(item.get('tickets_found'))} | avail_total={item.get('available_count')}"
         )
 
     output = "\n".join(lines)
