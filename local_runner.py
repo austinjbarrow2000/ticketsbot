@@ -55,7 +55,17 @@ def sleep_with_jitter(interval_seconds, jitter_seconds):
         jitter = random.randint(-jitter_seconds, jitter_seconds)
 
     sleep_for = max(1, interval_seconds + jitter)
-    time.sleep(sleep_for)
+
+    # Display countdown timer
+    for remaining in range(int(sleep_for), 0, -1):
+        mins, secs = divmod(remaining, 60)
+        print(
+            f"\rNext check in {mins}:{secs:02d}... (Press Ctrl+C to exit)",
+            end="",
+            flush=True,
+        )
+        time.sleep(1)
+    print()  # New line after countdown
 
 
 def format_timedelta(delta_seconds):
@@ -403,7 +413,6 @@ def render_dashboard(state, interval_seconds, jitter_seconds):
     git_sync = state.get("git_sync", {})
 
     lines = []
-    lines.append("\033[2J\033[H")
     lines.append(style_header("Ticket Monitor Dashboard (Live)"))
     lines.append("=" * 80)
     lines.append(
@@ -489,7 +498,8 @@ def render_dashboard(state, interval_seconds, jitter_seconds):
         )
 
     output = "\n".join(lines)
-    print(output, end="\n", flush=True)
+    os.system("clear" if os.name != "nt" else "cls")
+    print(output)
 
 
 def get_latest_scheduled_run_timestamp():
@@ -601,7 +611,9 @@ def run_loop(interval_seconds, jitter_seconds):
         render_dashboard(state, interval_seconds, jitter_seconds)
 
         if interval_seconds <= 1:
+            print("\rNext check in 0:01... (Press Ctrl+C to exit)", end="", flush=True)
             time.sleep(1)
+            print()
         else:
             sleep_with_jitter(interval_seconds, jitter_seconds)
 
@@ -613,14 +625,14 @@ def parse_args():
     parser.add_argument(
         "--interval-seconds",
         type=int,
-        default=150,
-        help="Base interval between checks (default: 150).",
+        default=1500,
+        help="Base interval between checks (default: 1500 = 25 minutes).",
     )
     parser.add_argument(
         "--jitter-seconds",
         type=int,
-        default=30,
-        help="Random jitter added/subtracted each cycle (default: 30).",
+        default=60,
+        help="Random jitter added/subtracted each cycle (default: 60 = 1 minute).",
     )
     return parser.parse_args()
 
