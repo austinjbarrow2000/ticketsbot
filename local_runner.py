@@ -16,7 +16,9 @@ from monitor import check_tickets, send_telegram
 WATCH_GITHUB_SCHEDULE = os.getenv("WATCH_GITHUB_SCHEDULE", "1") == "1"
 WATCH_GITHUB_REPO = os.getenv("WATCH_GITHUB_REPO", "austinjbarrow2000/ticketsbot")
 WATCH_GITHUB_WORKFLOW = os.getenv("WATCH_GITHUB_WORKFLOW", "monitor.yml")
-WATCH_GITHUB_MAX_DELAY_MINUTES = int(os.getenv("WATCH_GITHUB_MAX_DELAY_MINUTES", "12"))
+WATCH_GITHUB_MAX_DELAY_MINUTES = max(
+    60, int(os.getenv("WATCH_GITHUB_MAX_DELAY_MINUTES", "60"))
+)
 STATE_FILE = os.getenv("LOCAL_MONITOR_STATE_FILE", "local_monitor_state.json")
 MAX_HISTORY = int(os.getenv("LOCAL_MONITOR_MAX_HISTORY", "500"))
 GIT_STATE_SYNC_ENABLED = os.getenv("GIT_STATE_SYNC_ENABLED", "1") == "1"
@@ -625,14 +627,14 @@ def parse_args():
     parser.add_argument(
         "--interval-seconds",
         type=int,
-        default=1500,
-        help="Base interval between checks (default: 1500 = 25 minutes).",
+        default=60,
+        help="Base interval between checks (default: 60).",
     )
     parser.add_argument(
         "--jitter-seconds",
         type=int,
-        default=60,
-        help="Random jitter added/subtracted each cycle (default: 60 = 1 minute).",
+        default=15,
+        help="Random jitter added/subtracted each cycle (default: 15).",
     )
     return parser.parse_args()
 
